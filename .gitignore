@@ -1,2 +1,52 @@
-/dist
-/node_modules
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# TypeScript
+*.tsbuildinfo
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# PostgreSQL
+*.sql
+*.dump
+*.bak
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE/editor files
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Next.js build output (if applicable)
+.next/
+
+# Optional: Coverage reports (for Jest, for example)
+coverage/
+
+# Optional: Docker files (if applicable)
+docker-compose.override.yml
+docker-compose.yml
+.docker/
+
+# JetBrains IDEs
+.idea/
+
+# Misc
+*.tgz
+.project
