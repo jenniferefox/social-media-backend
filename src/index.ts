@@ -1,5 +1,5 @@
 import express, { Request, Response, Application } from 'express';
-import { pool } from './models/user';
+import { pool } from './db';
 
 const app: Application = express();
 
@@ -67,7 +67,6 @@ app.put("/users/:id", async(req, res) => {
   }
 });
 
-// TODOS:
 //delete a user
 app.delete("/users/:id", async(req, res) => {
   try {
@@ -81,12 +80,3 @@ app.delete("/users/:id", async(req, res) => {
     console.error(err.message)
   }
 })
-
-// Questions for Alex:
-
-// Error Message:
-// Module '"/Users/jenni/github_repos/social-media-backend/node_modules/.pnpm/@types+express@5.0.0/node_modules/@types/express/index"' can only be default-imported using the 'esModuleInterop' flagts(1259)
-// index.d.ts(128, 1): This module is declared with 'export =', and can only be used with a default import when using the 'esModuleInterop' flag.
-
-// So this means that the old export method is used for express and to be able to import I need this flag in my tsconfig file for it to work?
-// This might be because I used commonjs, should I use a different one as a default?
