@@ -1,5 +1,6 @@
 import express, { Request, Response, Application } from 'express';
 import { pool } from './db';
+import { matchUserUUID } from './utils';
 
 const app: Application = express();
 
@@ -40,7 +41,6 @@ app.get("/users", async(req, res) => {
 
 //get a user
 app.get("/users/:id", async(req, res) => {
-
   try {
     const {id} = req.params
     const user = await pool.query("SELECT * FROM users WHERE user_id = $1",
@@ -88,22 +88,14 @@ app.post("/users/:id/posts", async(req: Request, res: Response) => {
     const { title, content } = req.body;
     const path = req.path;
 
-    // Regular expression to match a UUID
-    const regex = /\/users\/([a-f0-9\-]{36})\//;
-    const match = path.match(regex);
-
-    if (match && match[1]) {
-      console.log("Extracted UUID:", match[1]);
-      const user_id = match[1]
-      const newPost = await pool.query(
+    // Regular expression to match user UUID
+    const user_id = matchUserUUID(path)
+    const newPost = await pool.query(
       "INSERT INTO posts (title, content, user_id) VALUES ($1, $2, $3) RETURNING *",
       [title, content, user_id]
     );
 
     res.json(newPost.rows[0])
-    } else {
-      console.log("No UUID found.");
-    }
 
   } catch (err: any) {
     console.error(err.message);
@@ -115,20 +107,14 @@ app.post("/users/:id/posts", async(req: Request, res: Response) => {
 app.get("/users/:id/posts", async(req, res) => {
   try {
     const path = req.path;
-    const regex = /\/users\/([a-f0-9\-]{36})\//;
-    const match = path.match(regex);
 
-    if (match && match[1]) {
-      console.log("Extracted UUID:", match[1]);
-      const user_id = match[1]
-      const allPosts = await pool.query("SELECT * FROM posts WHERE user_id = $1",
-        [user_id]
-      );
-      res.json(allPosts.rows)
+    // Regular expression to match user UUID
+    const user_id = matchUserUUID(path)
 
-    } else {
-      console.log("No UUID found.");
-    }
+    const allPosts = await pool.query("SELECT * FROM posts WHERE user_id = $1",
+      [user_id]
+    );
+    res.json(allPosts.rows)
 
   } catch (err) {
     console.error(err.message);
@@ -139,21 +125,15 @@ app.get("/users/:id/posts", async(req, res) => {
 app.get("/users/:id/posts/:id", async(req, res) => {
   try {
     const { id } = req.params;
-
     const path = req.path;
-    const regex = /\/users\/([a-f0-9\-]{36})\//;
-    const match = path.match(regex);
 
-    if (match && match[1]) {
-      console.log("Extracted UUID:", match[1]);
-      const user_id = match[1]
-      const {id} = req.params
-      const post = await pool.query("SELECT * FROM posts WHERE user_id = $1 AND id = $2 ",
-        [id, user_id]);
+    // Regular expression to match user UUID
+    const user_id = matchUserUUID(path)
 
-      res.json(post.rows)
-    } else {
-    console.log("No UUID found.");}
+    const post = await pool.query("SELECT * FROM posts WHERE user_id = $1 AND id = $2 ",
+      [id, user_id]
+    );
+    res.json(post.rows)
 
   } catch (err) {
     console.error(err.message);
@@ -167,19 +147,10 @@ app.put("/users/:id/posts/:id", async(req, res) => {
     const { title, content } = req.body;
 
     const path = req.path;
-    const regex = /\/users\/([a-f0-9\-]{36})\//;
-    const match = path.match(regex);
-
-    if (match && match[1]) {
-      console.log("Extracted UUID:", match[1]);
-      const user_id = match[1]
-      const {id} = req.params
-      const updatePosts = await pool.query("UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4",
-        [title, content, id, user_id]);
-
-    } else {
-    console.log("No UUID found.");}
-
+    const user_id = matchUserUUID(path)
+    const updatePosts = await pool.query("UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4",
+      [title, content, id, user_id]
+    );
     res.json("Posts was updated")
 
   } catch (err) {
@@ -192,18 +163,10 @@ app.delete("/users/:id/posts/:id", async(req, res) => {
   try {
     const { id } = req.params;
     const path = req.path;
-    const regex = /\/users\/([a-f0-9\-]{36})\//;
-    const match = path.match(regex);
-
-    if (match && match[1]) {
-      console.log("Extracted UUID:", match[1]);
-      const user_id = match[1]
-      const deletePost = await pool.query("DELETE FROM posts WHERE id = $1 AND user_id = $2",
-        [id, user_id]);
-
-    } else {
-    console.log("No UUID found.");}
-
+    const user_id = matchUserUUID(path)
+    const deletePost = await pool.query("DELETE FROM posts WHERE id = $1 AND user_id = $2",
+      [id, user_id]
+    );
     res.json("Post was successfully deleted")
 
   } catch (err) {
