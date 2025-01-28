@@ -29,6 +29,10 @@ app.post("/users", async (req: Request, res: Response) => {
 
     const { name, age } = req.body;
 
+    if (!name || !age) {
+      res.status(400).send("Bad request")
+    }
+
     const newUser = await pool.query(
       "INSERT INTO users (name, age) VALUES ($1, $2) RETURNING *",
       [name, age]
@@ -50,6 +54,10 @@ app.get("/users", async (req, res) => {
 
     const allUsers: any = await pool.query("SELECT * FROM users");
 
+    if (!allUsers.rows.length) {
+      res.status(404).send("No users found")
+    };
+
     const userNames: string[] = allUsers.rows.map((row: User) => row.name);
     // Question for Alex: Is this way of using rows safe?
 
@@ -67,6 +75,10 @@ app.get("/users", async (req, res) => {
 app.get("/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!id) {
+      res.status(400).send("Bad request")
+    };
 
     const user = await pool.query("SELECT * FROM users WHERE user_id = $1", [
       id,
@@ -88,6 +100,10 @@ app.put("/users/:id", async (req, res) => {
     const { id } = req.params;
     const { name, age } = req.body;
 
+    if (!id || !name || !age) {
+      res.status(400).send("Bad request")
+    };
+
     const updateUsers = await pool.query(
       "UPDATE users SET name = $1, age = $2 WHERE user_id = $3",
       [name, age, id]
@@ -108,6 +124,9 @@ app.delete("/users/:id", async (req, res) => {
   try {
 
     const { id } = req.params;
+    if (!id) {
+      res.status(400).send("Bad request")
+    };
 
     const deleteUser = await pool.query(
       "DELETE FROM users WHERE user_id = $1",
@@ -129,6 +148,10 @@ app.post("/users/:id/posts", async (req: Request, res: Response) => {
   try {
 
     const { title, content } = req.body;
+
+    if (!title || !content) {
+      res.status(400).send("Bad request")
+    }
 
     // Regular expression to match user UUID
     const user_id = matchUserUUID(req);
@@ -160,6 +183,10 @@ app.get("/users/:id/posts", async (req, res) => {
       [user_id]
     );
 
+    if (!allPosts.rows.length) {
+      res.status(404).send("No users found")
+    };
+
     const posts: string[] = allPosts.rows.map((row: Post) => row.title);
 
     res.json(posts);
@@ -172,11 +199,15 @@ app.get("/users/:id/posts", async (req, res) => {
   }
 });
 
-//get a post ***NOT WORKING
+//get a post
 app.get("/users/:id/posts/:id", async (req, res) => {
   try {
 
     const { id } = req.params;
+
+    if (!id) {
+      res.status(400).send("Bad request")
+    };
 
     // Regular expression to match user UUID
     const user_id = matchUserUUID(req);
@@ -201,8 +232,11 @@ app.put("/users/:id/posts/:id", async (req, res) => {
   try {
 
     const { id } = req.params;
-
     const { title, content } = req.body;
+
+    if (!id || !title || !content) {
+      res.status(400).send("Bad request")
+    };
 
     const user_id = matchUserUUID(req);
 
@@ -226,6 +260,9 @@ app.delete("/users/:id/posts/:id", async (req, res) => {
   try {
 
     const { id } = req.params;
+    if (!id) {
+      res.status(400).send("Bad request")
+    };
 
     const user_id = matchUserUUID(req);
 
