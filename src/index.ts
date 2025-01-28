@@ -1,14 +1,14 @@
-import express, { Request, Response, Application } from 'express';
-import { pool } from './db';
-import { matchUserUUID } from './utils';
+import express, { Request, Response, Application } from "express";
+import { pool } from "./db";
+import { matchUserUUID } from "./utils";
 
 const app: Application = express();
 
-app.use(express.json())
+app.use(express.json());
 
 app.listen(5000, () => {
   console.log("server is listening on port 5000");
-})
+});
 
 interface User {
   user_id: string;
@@ -24,175 +24,222 @@ interface Post {
 }
 
 //create a user
-app.post("/users", async(req: Request, res: Response) => {
+app.post("/users", async (req: Request, res: Response) => {
   try {
+
     const { name, age } = req.body;
+
     const newUser = await pool.query(
       "INSERT INTO users (name, age) VALUES ($1, $2) RETURNING *",
       [name, age]
     );
 
-    res.json("New user added!")
+    res.json("New user added!");
 
   } catch (err: any) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
+
   }
 });
 
 //get all users
-app.get("/users", async(req, res) => {
+app.get("/users", async (req, res) => {
   try {
+
     const allUsers: any = await pool.query("SELECT * FROM users");
+
     const userNames: string[] = allUsers.rows.map((row: User) => row.name);
     // Question for Alex: Is this way of using rows safe?
-    res.json(userNames)
+
+    res.json(userNames);
 
   } catch (err) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
+
   }
 });
 
 //get a user
-app.get("/users/:id", async(req, res) => {
+app.get("/users/:id", async (req, res) => {
   try {
-    const {id} = req.params
-    const user = await pool.query("SELECT * FROM users WHERE user_id = $1",
-      [id]);
+    const { id } = req.params;
 
-      res.json(user.rows[0].name)
+    const user = await pool.query("SELECT * FROM users WHERE user_id = $1", [
+      id,
+    ]);
+
+    res.json(user.rows[0].name);
 
   } catch (err) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
-  }});
+
+  }
+});
 
 //update a user
-app.put("/users/:id", async(req, res) => {
+app.put("/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { name, age } = req.body;
 
-    const updateUsers = await pool.query("UPDATE users SET name = $1, age = $2 WHERE user_id = $3",
+    const updateUsers = await pool.query(
+      "UPDATE users SET name = $1, age = $2 WHERE user_id = $3",
       [name, age, id]
     );
 
-    res.json("Users was updated")
+    res.json("Users was updated");
 
   } catch (err) {
+
     console.error(err.message);
+    res.status(500).json({ error: err.message });
+
   }
 });
 
 //delete a user
-app.delete("/users/:id", async(req, res) => {
+app.delete("/users/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const deleteUser = await pool.query("DELETE FROM users WHERE user_id = $1",
-      [id]);
 
-      res.json("User was successfully deleted")
+    const { id } = req.params;
+
+    const deleteUser = await pool.query(
+      "DELETE FROM users WHERE user_id = $1",
+      [id]
+    );
+
+    res.json("User was successfully deleted");
 
   } catch (err) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
+
   }
-})
+});
 
 //create a post
-app.post("/users/:id/posts", async(req: Request, res: Response) => {
+app.post("/users/:id/posts", async (req: Request, res: Response) => {
   try {
+
     const { title, content } = req.body;
-    const path = req.path;
 
     // Regular expression to match user UUID
-    const user_id = matchUserUUID(path)
+    const user_id = matchUserUUID(req);
+
     const newPost = await pool.query(
       "INSERT INTO posts (title, content, user_id) VALUES ($1, $2, $3) RETURNING *",
       [title, content, user_id]
     );
 
-    res.json("Post added!")
+    res.json("Post added!");
 
   } catch (err: any) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
+
   }
 });
 
 //get all posts
-app.get("/users/:id/posts", async(req, res) => {
+app.get("/users/:id/posts", async (req, res) => {
   try {
-    const path = req.path;
 
     // Regular expression to match user UUID
-    const user_id = matchUserUUID(path)
+    const user_id = matchUserUUID(req);
 
-    const allPosts = await pool.query("SELECT * FROM posts WHERE user_id = $1",
+    const allPosts = await pool.query(
+      "SELECT * FROM posts WHERE user_id = $1",
       [user_id]
     );
+
     const posts: string[] = allPosts.rows.map((row: Post) => row.title);
-    res.json(posts)
+
+    res.json(posts);
 
   } catch (err) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
+
   }
 });
 
 //get a post ***NOT WORKING
-app.get("/users/:id/posts/:id", async(req, res) => {
+app.get("/users/:id/posts/:id", async (req, res) => {
   try {
+
     const { id } = req.params;
-    const path = req.path;
 
     // Regular expression to match user UUID
-    const user_id = matchUserUUID(path)
+    const user_id = matchUserUUID(req);
 
-    const post = await pool.query("SELECT * FROM posts WHERE user_id = $1 AND id = $2 ",
+    const post = await pool.query(
+      "SELECT * FROM posts WHERE user_id = $1 AND id = $2 ",
       [id, user_id]
     );
-    res.json(post)
+
+    res.json(post);
 
   } catch (err) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
-  }});
+
+  }
+});
 
 //update a post
-app.put("/users/:id/posts/:id", async(req, res) => {
+app.put("/users/:id/posts/:id", async (req, res) => {
   try {
 
     const { id } = req.params;
+
     const { title, content } = req.body;
 
-    const path = req.path;
-    const user_id = matchUserUUID(path)
-    const updatePosts = await pool.query("UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4",
+    const user_id = matchUserUUID(req);
+
+    const updatePosts = await pool.query(
+      "UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4",
       [title, content, id, user_id]
     );
-    res.json("Posts was updated")
+
+    res.json("Posts was updated");
 
   } catch (err) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
+
   }
 });
 
 //delete a post
-app.delete("/users/:id/posts/:id", async(req, res) => {
+app.delete("/users/:id/posts/:id", async (req, res) => {
   try {
+
     const { id } = req.params;
-    const path = req.path;
-    const user_id = matchUserUUID(path)
-    const deletePost = await pool.query("DELETE FROM posts WHERE id = $1 AND user_id = $2",
+
+    const user_id = matchUserUUID(req);
+
+    const deletePost = await pool.query(
+      "DELETE FROM posts WHERE id = $1 AND user_id = $2",
       [id, user_id]
     );
-    res.json("Post was successfully deleted")
+
+    res.json("Post was successfully deleted");
 
   } catch (err) {
+
     console.error(err.message);
     res.status(500).json({ error: err.message });
+
   }
 });
