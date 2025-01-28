@@ -50,6 +50,7 @@ app.get("/users", async(req, res) => {
 
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -64,6 +65,7 @@ app.get("/users/:id", async(req, res) => {
 
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: err.message });
   }});
 
 //update a user
@@ -93,7 +95,8 @@ app.delete("/users/:id", async(req, res) => {
       res.json("User was successfully deleted")
 
   } catch (err) {
-    console.error(err.message)
+    console.error(err.message);
+    res.status(500).json({ error: err.message });
   }
 })
 
@@ -134,6 +137,7 @@ app.get("/users/:id/posts", async(req, res) => {
 
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -153,6 +157,7 @@ app.get("/users/:id/posts/:id", async(req, res) => {
 
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: err.message });
   }});
 
 //update a post
@@ -171,6 +176,7 @@ app.put("/users/:id/posts/:id", async(req, res) => {
 
   } catch (err) {
     console.error(err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -186,6 +192,7 @@ app.delete("/users/:id/posts/:id", async(req, res) => {
     res.json("Post was successfully deleted")
 
   } catch (err) {
-    console.error(err.message)
+    console.error(err.message);
+    res.status(500).json({ error: err.message });
   }
 });
