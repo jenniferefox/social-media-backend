@@ -10,6 +10,19 @@ app.listen(5000, () => {
   console.log("server is listening on port 5000");
 })
 
+interface User {
+  user_id: string;
+  name: string;
+  age: number | null;
+}
+
+interface Post {
+  post_id: string;
+  title: string;
+  content: number | null;
+  user_id: string;
+}
+
 //create a user
 app.post("/users", async(req: Request, res: Response) => {
   try {
@@ -19,7 +32,7 @@ app.post("/users", async(req: Request, res: Response) => {
       [name, age]
     );
 
-    res.json(newUser.rows[0])
+    res.json("New user added!")
 
   } catch (err: any) {
     console.error(err.message);
@@ -30,9 +43,10 @@ app.post("/users", async(req: Request, res: Response) => {
 //get all users
 app.get("/users", async(req, res) => {
   try {
-    const allUsers = await pool.query("SELECT * FROM users");
-
-    res.json(allUsers.rows)
+    const allUsers: any = await pool.query("SELECT * FROM users");
+    const userNames: string[] = allUsers.rows.map((row: User) => row.name);
+    // Question for Alex: Is this way of using rows safe?
+    res.json(userNames)
 
   } catch (err) {
     console.error(err.message);
@@ -46,7 +60,7 @@ app.get("/users/:id", async(req, res) => {
     const user = await pool.query("SELECT * FROM users WHERE user_id = $1",
       [id]);
 
-      res.json(user.rows)
+      res.json(user.rows[0].name)
 
   } catch (err) {
     console.error(err.message);
@@ -59,9 +73,10 @@ app.put("/users/:id", async(req, res) => {
     const { name, age } = req.body;
 
     const updateUsers = await pool.query("UPDATE users SET name = $1, age = $2 WHERE user_id = $3",
-      [name, age, id]);
+      [name, age, id]
+    );
 
-      res.json("Users was updated")
+    res.json("Users was updated")
 
   } catch (err) {
     console.error(err.message);
@@ -95,7 +110,7 @@ app.post("/users/:id/posts", async(req: Request, res: Response) => {
       [title, content, user_id]
     );
 
-    res.json(newPost.rows[0])
+    res.json("Post added!")
 
   } catch (err: any) {
     console.error(err.message);
@@ -114,14 +129,15 @@ app.get("/users/:id/posts", async(req, res) => {
     const allPosts = await pool.query("SELECT * FROM posts WHERE user_id = $1",
       [user_id]
     );
-    res.json(allPosts.rows)
+    const posts: string[] = allPosts.rows.map((row: Post) => row.title);
+    res.json(posts)
 
   } catch (err) {
     console.error(err.message);
   }
 });
 
-//get a post
+//get a post ***NOT WORKING
 app.get("/users/:id/posts/:id", async(req, res) => {
   try {
     const { id } = req.params;
@@ -133,7 +149,7 @@ app.get("/users/:id/posts/:id", async(req, res) => {
     const post = await pool.query("SELECT * FROM posts WHERE user_id = $1 AND id = $2 ",
       [id, user_id]
     );
-    res.json(post.rows)
+    res.json(post)
 
   } catch (err) {
     console.error(err.message);
@@ -172,4 +188,4 @@ app.delete("/users/:id/posts/:id", async(req, res) => {
   } catch (err) {
     console.error(err.message)
   }
-})
+});
