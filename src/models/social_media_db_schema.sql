@@ -1,4 +1,6 @@
-CREATE DATABASE social_media_db;
+Import { config } from 'dotenv'
+
+CREATE DATABASE DB_NAME;
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
