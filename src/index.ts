@@ -152,9 +152,10 @@ app.post("/users/:id/posts", async (req: Request, res: Response) => {
     if (!title || !content) {
       res.status(400).send("Bad request")
     }
+    const { path } = req;
 
     // Regular expression to match user UUID
-    const user_id = matchUserUUID(req);
+    const user_id = matchUserUUID(path);
 
     const newPost = await pool.query(
       "INSERT INTO posts (title, content, user_id) VALUES ($1, $2, $3) RETURNING *",
@@ -176,7 +177,8 @@ app.get("/users/:id/posts", async (req, res) => {
   try {
 
     // Regular expression to match user UUID
-    const user_id = matchUserUUID(req);
+    const { path } = req;
+    const user_id = matchUserUUID(path);
 
     const allPosts = await pool.query(
       "SELECT * FROM posts WHERE user_id = $1",
@@ -210,7 +212,8 @@ app.get("/users/:id/posts/:id", async (req, res) => {
     };
 
     // Regular expression to match user UUID
-    const user_id = matchUserUUID(req);
+    const { path } = req;
+    const user_id = matchUserUUID(path);
 
     const post = await pool.query(
       "SELECT * FROM posts WHERE user_id = $1 AND id = $2 ",
@@ -238,7 +241,8 @@ app.put("/users/:id/posts/:id", async (req, res) => {
       res.status(400).send("Bad request")
     };
 
-    const user_id = matchUserUUID(req);
+    const { path } = req;
+    const user_id = matchUserUUID(path);
 
     const updatePosts = await pool.query(
       "UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4",
@@ -264,7 +268,8 @@ app.delete("/users/:id/posts/:id", async (req, res) => {
       res.status(400).send("Bad request")
     };
 
-    const user_id = matchUserUUID(req);
+    const { path } = req;
+    const user_id = matchUserUUID(path);
 
     const deletePost = await pool.query(
       "DELETE FROM posts WHERE id = $1 AND user_id = $2",

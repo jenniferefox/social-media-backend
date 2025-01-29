@@ -1,7 +1,6 @@
 import express, { Request, Response, Application } from "express";
 
-export function matchUserUUID(req: Request) {
-  const path = req.path;
+export function matchUserUUID(path: string) {
   const regex = /\/users\/([a-f0-9\-]{36})\//;
   const match = path.match(regex);
 
