@@ -33,8 +33,8 @@ app.post("/users", async (req: Request, res: Response) => {
       res.status(400).send("Bad request")
     }
 
-    const newUser = await pool.query(
-      "INSERT INTO users (name, age) VALUES ($1, $2) RETURNING *",
+    await pool.query(
+      "INSERT INTO users (name, age) VALUES ($1, $2)",
       [name, age]
     );
 
@@ -59,7 +59,6 @@ app.get("/users", async (req, res) => {
     };
 
     const userNames: string[] = allUsers.rows.map((row: User) => row.name);
-    // Question for Alex: Is this way of using rows safe?
 
     res.json(userNames);
 
@@ -104,7 +103,7 @@ app.put("/users/:id", async (req, res) => {
       res.status(400).send("Bad request")
     };
 
-    const updateUsers = await pool.query(
+    await pool.query(
       "UPDATE users SET name = $1, age = $2 WHERE user_id = $3",
       [name, age, id]
     );
@@ -128,7 +127,7 @@ app.delete("/users/:id", async (req, res) => {
       res.status(400).send("Bad request")
     };
 
-    const deleteUser = await pool.query(
+    await pool.query(
       "DELETE FROM users WHERE user_id = $1",
       [id]
     );
@@ -157,8 +156,8 @@ app.post("/users/:id/posts", async (req: Request, res: Response) => {
     // Regular expression to match user UUID
     const user_id = matchUserUUID(path);
 
-    const newPost = await pool.query(
-      "INSERT INTO posts (title, content, user_id) VALUES ($1, $2, $3) RETURNING *",
+    await pool.query(
+      "INSERT INTO posts (title, content, user_id) VALUES ($1, $2, $3)",
       [title, content, user_id]
     );
 
@@ -244,7 +243,7 @@ app.put("/users/:id/posts/:id", async (req, res) => {
     const { path } = req;
     const user_id = matchUserUUID(path);
 
-    const updatePosts = await pool.query(
+    await pool.query(
       "UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4",
       [title, content, id, user_id]
     );
@@ -271,7 +270,7 @@ app.delete("/users/:id/posts/:id", async (req, res) => {
     const { path } = req;
     const user_id = matchUserUUID(path);
 
-    const deletePost = await pool.query(
+    await pool.query(
       "DELETE FROM posts WHERE id = $1 AND user_id = $2",
       [id, user_id]
     );
