@@ -1,6 +1,8 @@
 import express, { Request, Response, Application } from "express";
 import { pool } from "./db";
 import { matchUserUUID } from "./utils";
+import { config } from 'dotenv';
+
 
 const app: Application = express();
 
