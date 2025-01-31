@@ -5,38 +5,38 @@ CREATE DATABASE DB_NAME;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE users (
-  user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(100),
-  age INTEGER
+  user_id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  age INTEGER NOT NULL
 );
 
 CREATE TABLE posts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   title VARCHAR(25),
   content VARCHAR(150),
-  created_at TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE comments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+  user_id UUID NOT NULL,
   content VARCHAR(150),
   post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE
 );
 
 CREATE TABLE likes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID,
-  created_at TIMESTAMP DEFAULT NOW(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+  user_id UUID NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
   post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE
 );
 
 CREATE TABLE friendships (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id1 UUID,
-  user_id2 UUID ,
-  created TIMESTAMP DEFAULT NOW(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+  user_id1 UUID NOT NULL,
+  user_id2 UUID NOT NULL,
+  created TIMESTAMP DEFAULT NOW() NOT NULL,
   FOREIGN KEY (user_id1) REFERENCES users(user_id),
   FOREIGN KEY (user_id2) REFERENCES users(user_id)
 );
