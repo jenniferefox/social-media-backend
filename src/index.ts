@@ -1,6 +1,7 @@
 import express, { Request, Response, Application } from "express";
 import { pool } from "./db";
 import { matchUserUUID } from "./utils";
+import { v4 as uuidv4 } from 'uuid';
 // import { config } from 'dotenv';
 import { z } from 'zod';
 
@@ -16,7 +17,7 @@ app.listen(5000, () => {
 
 //zod schema
 const userSchema = z.object({
-  // user_id: z.string().uuid(),
+  user_id: z.string().uuid().default(uuidv4()),
   name: z.string(),
   age: z.number().min(0).max(200)
 
