@@ -2,8 +2,10 @@ CREATE DATABASE social_media_db;
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- Don't need gen_random_uuid() in SQL table now.
+
 CREATE TABLE users (
-  user_id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+  user_id UUID PRIMARY KEY NOT NULL,
   name VARCHAR(100) NOT NULL,
   age INTEGER NOT NULL
 );

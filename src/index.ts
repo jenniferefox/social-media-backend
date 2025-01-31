@@ -43,8 +43,8 @@ app.post("/users", async (req: Request, res: Response) => {
     }
 
     await pool.query(
-      "INSERT INTO users (name, age) VALUES ($1, $2)",
-      [result.data.name, result.data.age]
+      "INSERT INTO users (user_id, name, age) VALUES ($1, $2, $3)",
+      [result.data.user_id, result.data.name, result.data.age]
     );
 
     res.json({
