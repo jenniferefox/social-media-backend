@@ -1,7 +1,8 @@
 import express, { Request, Response, Application } from "express";
 import { pool } from "./db";
 import { matchUserUUID } from "./utils";
-import { config } from 'dotenv';
+// import { config } from 'dotenv';
+import { z } from 'zod';
 
 
 const app: Application = express();
@@ -12,11 +13,14 @@ app.listen(5000, () => {
   console.log("server is listening on port 5000");
 });
 
-interface User {
-  user_id: string;
-  name: string;
-  age: number | null;
-}
+
+//zod schema
+const userSchema = z.object({
+  // user_id: z.string().uuid(),
+  name: z.string(),
+  age: z.number().min(0).max(200)
+
+});
 
 interface Post {
   post_id: string;
@@ -29,18 +33,23 @@ interface Post {
 app.post("/users", async (req: Request, res: Response) => {
   try {
 
-    const { name, age } = req.body;
+    const result = userSchema.safeParse(req.body);
 
-    if (!name || !age) {
-      res.status(400).send("Bad request")
+    if (!result.success) {
+      res.status(400).json({
+        error: result.error.errors,
+      });
     }
 
     await pool.query(
       "INSERT INTO users (name, age) VALUES ($1, $2)",
-      [name, age]
+      [result.data.name, result.data.age]
     );
 
-    res.json("New user added!");
+    res.json({
+      message: "New user added!",
+    data: result.data,
+  });
 
   } catch (err: any) {
 
@@ -60,9 +69,9 @@ app.get("/users", async (req, res) => {
       res.status(404).send("No users found")
     };
 
-    const userNames: string[] = allUsers.rows.map((row: User) => row.name);
+    // const userNames: string[] = allUsers.rows.map((row: userSchema) => row.name);
 
-    res.json(userNames);
+    // res.json(userNames);
 
   } catch (err) {
 
