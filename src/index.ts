@@ -15,12 +15,19 @@ app.listen(5000, () => {
 });
 
 
-//zod schema
+//zod schemas, help with type safety during runtime
 const userSchema = z.object({
   user_id: z.string().uuid().default(uuidv4()),
   name: z.string(),
   age: z.number().min(0).max(200)
 
+});
+
+const postSchema = z.object({
+  post_id: z.string().uuid().default(uuidv4()),
+  title: z.string().max(100),
+  content: z.string().max(500),
+  user_id: z.string().uuid()
 });
 
 interface Post {
@@ -49,7 +56,7 @@ app.post("/users", async (req: Request, res: Response) => {
 
     res.json({
       message: "New user added!",
-    data: result.data,
+      data: result.data.user_id,
   });
 
   } catch (err: any) {
@@ -64,15 +71,19 @@ app.post("/users", async (req: Request, res: Response) => {
 app.get("/users", async (req, res) => {
   try {
 
-    const allUsers: any = await pool.query("SELECT * FROM users");
+    const result = userSchema.safeParse(req.body);
 
-    if (!allUsers.rows.length) {
-      res.status(404).send("No users found")
+    if (!result.success) {
+      res.status(400).json({
+        error: result.error.errors,
+      });
     };
 
-    // const userNames: string[] = allUsers.rows.map((row: userSchema) => row.name);
+    const allUsers: any = await pool.query("SELECT * FROM users");
 
-    // res.json(userNames);
+    const userNames: string[] = allUsers.rows.map((row: { name: string }) => row.name);
+
+    res.json(userNames);
 
   } catch (err) {
 
