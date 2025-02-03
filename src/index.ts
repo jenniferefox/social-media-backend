@@ -1,309 +1,174 @@
-import express, { Request, Response, Application } from "express";
+import express, { Application } from "express";
 import { pool } from "./db";
-import { matchUserUUID } from "./utils";
-import { v4 as uuidv4 } from 'uuid';
-// import { config } from 'dotenv';
-import { z } from 'zod';
-
+// import { matchUserUUID } from "./utils";
+// import { v4 as uuidv4 } from 'uuid';
+// // import { config } from 'dotenv';
+// import { z } from 'zod';
+import router from "./routes/users";
 
 const app: Application = express();
 
 app.use(express.json());
 
+// const postSchema = z.object({
+//   post_id: z.string().uuid().default(uuidv4()),
+//   title: z.string().max(100),
+//   content: z.string().max(500),
+//   user_id: z.string().uuid()
+// });
+
+// interface Post {
+//   post_id: string;
+//   title: string;
+//   content: number | null;
+//   user_id: string;
+// }
+
+app.use("/users", router);
+
 app.listen(5000, () => {
   console.log("server is listening on port 5000");
 });
 
+// //create a post
+// app.post("/users/:id/posts", async (req: Request, res: Response) => {
+//   try {
 
-//zod schemas, help with type safety during runtime
-const userSchema = z.object({
-  user_id: z.string().uuid().default(uuidv4()),
-  name: z.string(),
-  age: z.number().min(0).max(200)
+//     const { title, content } = req.body;
 
-});
+//     if (!title || !content) {
+//       res.status(400).send("Bad request")
+//     }
+//     const { path } = req;
 
-const postSchema = z.object({
-  post_id: z.string().uuid().default(uuidv4()),
-  title: z.string().max(100),
-  content: z.string().max(500),
-  user_id: z.string().uuid()
-});
+//     // Regular expression to match user UUID
+//     const user_id = matchUserUUID(path);
 
-interface Post {
-  post_id: string;
-  title: string;
-  content: number | null;
-  user_id: string;
-}
+//     await pool.query(
+//       "INSERT INTO posts (title, content, user_id) VALUES ($1, $2, $3)",
+//       [title, content, user_id]
+//     );
 
-//create a user
-app.post("/users", async (req: Request, res: Response) => {
-  try {
+//     res.json("Post added!");
 
-    const result = userSchema.safeParse(req.body);
+//   } catch (err: any) {
 
-    if (!result.success) {
-      res.status(400).json({
-        error: result.error.errors,
-      });
-    }
+//     console.error(err.message);
+//     res.status(500).json({ error: err.message });
 
-    await pool.query(
-      "INSERT INTO users (user_id, name, age) VALUES ($1, $2, $3)",
-      [result.data.user_id, result.data.name, result.data.age]
-    );
+//   }
+// });
 
-    res.json({
-      message: "New user added!",
-      data: result.data.user_id,
-  });
+// //get all posts
+// app.get("/users/:id/posts", async (req, res) => {
+//   try {
 
-  } catch (err: any) {
+//     // Regular expression to match user UUID
+//     const { path } = req;
+//     const user_id = matchUserUUID(path);
 
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
+//     const allPosts = await pool.query(
+//       "SELECT * FROM posts WHERE user_id = $1",
+//       [user_id]
+//     );
 
-  }
-});
+//     if (!allPosts.rows.length) {
+//       res.status(404).send("No users found")
+//     };
 
-//get all users
-app.get("/users", async (req, res) => {
-  try {
+//     const posts: string[] = allPosts.rows.map((row: Post) => row.title);
 
-    const result = userSchema.safeParse(req.body);
+//     res.json(posts);
 
-    if (!result.success) {
-      res.status(400).json({
-        error: result.error.errors,
-      });
-    };
+//   } catch (err) {
 
-    const allUsers: any = await pool.query("SELECT * FROM users");
+//     console.error(err.message);
+//     res.status(500).json({ error: err.message });
 
-    const userNames: string[] = allUsers.rows.map((row: { name: string }) => row.name);
+//   }
+// });
 
-    res.json(userNames);
+// //get a post
+// app.get("/users/:id/posts/:id", async (req, res) => {
+//   try {
 
-  } catch (err) {
+//     const { id } = req.params;
 
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
+//     if (!id) {
+//       res.status(400).send("Bad request")
+//     };
 
-  }
-});
+//     // Regular expression to match user UUID
+//     const { path } = req;
+//     const user_id = matchUserUUID(path);
 
-//get a user
-app.get("/users/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
+//     const post = await pool.query(
+//       "SELECT * FROM posts WHERE user_id = $1 AND id = $2 ",
+//       [id, user_id]
+//     );
 
-    if (!id) {
-      res.status(400).send("Bad request")
-    };
+//     res.json(post);
 
-    const user = await pool.query("SELECT * FROM users WHERE user_id = $1", [
-      id,
-    ]);
+//   } catch (err) {
 
-    res.json(user.rows[0].name);
+//     console.error(err.message);
+//     res.status(500).json({ error: err.message });
 
-  } catch (err) {
+//   }
+// });
 
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
+// //update a post
+// app.put("/users/:id/posts/:id", async (req, res) => {
+//   try {
 
-  }
-});
+//     const { id } = req.params;
+//     const { title, content } = req.body;
 
-//update a user
-app.put("/users/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, age } = req.body;
+//     if (!id || !title || !content) {
+//       res.status(400).send("Bad request")
+//     };
 
-    if (!id || !name || !age) {
-      res.status(400).send("Bad request")
-    };
+//     const { path } = req;
+//     const user_id = matchUserUUID(path);
 
-    await pool.query(
-      "UPDATE users SET name = $1, age = $2 WHERE user_id = $3",
-      [name, age, id]
-    );
+//     await pool.query(
+//       "UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4",
+//       [title, content, id, user_id]
+//     );
 
-    res.json("Users was updated");
+//     res.json("Posts was updated");
 
-  } catch (err) {
+//   } catch (err) {
 
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
+//     console.error(err.message);
+//     res.status(500).json({ error: err.message });
 
-  }
-});
+//   }
+// });
 
-//delete a user
-app.delete("/users/:id", async (req, res) => {
-  try {
+// //delete a post
+// app.delete("/users/:id/posts/:id", async (req, res) => {
+//   try {
 
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).send("Bad request")
-    };
+//     const { id } = req.params;
+//     if (!id) {
+//       res.status(400).send("Bad request")
+//     };
 
-    await pool.query(
-      "DELETE FROM users WHERE user_id = $1",
-      [id]
-    );
+//     const { path } = req;
+//     const user_id = matchUserUUID(path);
 
-    res.json("User was successfully deleted");
+//     await pool.query(
+//       "DELETE FROM posts WHERE id = $1 AND user_id = $2",
+//       [id, user_id]
+//     );
 
-  } catch (err) {
+//     res.json("Post was successfully deleted");
 
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
+//   } catch (err) {
 
-  }
-});
+//     console.error(err.message);
+//     res.status(500).json({ error: err.message });
 
-//create a post
-app.post("/users/:id/posts", async (req: Request, res: Response) => {
-  try {
-
-    const { title, content } = req.body;
-
-    if (!title || !content) {
-      res.status(400).send("Bad request")
-    }
-    const { path } = req;
-
-    // Regular expression to match user UUID
-    const user_id = matchUserUUID(path);
-
-    await pool.query(
-      "INSERT INTO posts (title, content, user_id) VALUES ($1, $2, $3)",
-      [title, content, user_id]
-    );
-
-    res.json("Post added!");
-
-  } catch (err: any) {
-
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
-
-  }
-});
-
-//get all posts
-app.get("/users/:id/posts", async (req, res) => {
-  try {
-
-    // Regular expression to match user UUID
-    const { path } = req;
-    const user_id = matchUserUUID(path);
-
-    const allPosts = await pool.query(
-      "SELECT * FROM posts WHERE user_id = $1",
-      [user_id]
-    );
-
-    if (!allPosts.rows.length) {
-      res.status(404).send("No users found")
-    };
-
-    const posts: string[] = allPosts.rows.map((row: Post) => row.title);
-
-    res.json(posts);
-
-  } catch (err) {
-
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
-
-  }
-});
-
-//get a post
-app.get("/users/:id/posts/:id", async (req, res) => {
-  try {
-
-    const { id } = req.params;
-
-    if (!id) {
-      res.status(400).send("Bad request")
-    };
-
-    // Regular expression to match user UUID
-    const { path } = req;
-    const user_id = matchUserUUID(path);
-
-    const post = await pool.query(
-      "SELECT * FROM posts WHERE user_id = $1 AND id = $2 ",
-      [id, user_id]
-    );
-
-    res.json(post);
-
-  } catch (err) {
-
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
-
-  }
-});
-
-//update a post
-app.put("/users/:id/posts/:id", async (req, res) => {
-  try {
-
-    const { id } = req.params;
-    const { title, content } = req.body;
-
-    if (!id || !title || !content) {
-      res.status(400).send("Bad request")
-    };
-
-    const { path } = req;
-    const user_id = matchUserUUID(path);
-
-    await pool.query(
-      "UPDATE posts SET title = $1, content = $2 WHERE id = $3 AND user_id = $4",
-      [title, content, id, user_id]
-    );
-
-    res.json("Posts was updated");
-
-  } catch (err) {
-
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
-
-  }
-});
-
-//delete a post
-app.delete("/users/:id/posts/:id", async (req, res) => {
-  try {
-
-    const { id } = req.params;
-    if (!id) {
-      res.status(400).send("Bad request")
-    };
-
-    const { path } = req;
-    const user_id = matchUserUUID(path);
-
-    await pool.query(
-      "DELETE FROM posts WHERE id = $1 AND user_id = $2",
-      [id, user_id]
-    );
-
-    res.json("Post was successfully deleted");
-
-  } catch (err) {
-
-    console.error(err.message);
-    res.status(500).json({ error: err.message });
-
-  }
-});
+//   }
+// });
