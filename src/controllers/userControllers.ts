@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { pool } from "../db";
-import { userSchema } from "../models/user";
+import { userSchema } from "../models/users";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
