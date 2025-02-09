@@ -4,15 +4,16 @@ import { createPost, deletePost, getAllPosts, getPost, updatePost  } from "../co
 
 const router = express.Router();
 
-router.post("/", createUser);
-router.get("/", getAllUsers);
-router.get("/:id", getUser);
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
-router.post("/:id/posts", createPost);
-router.get("/:id/posts", getAllPosts);
-router.get("/:id/posts/:id", getPost);
-router.put("/:id/posts/:id", updatePost);
-router.delete("/:id/posts/:id", deletePost);
+router.post("/login", createUser);
+router.get("/users", getAllUsers);
+// router.get("/users/:email", checkIfUserValid);
+router.get("/users/:id", getUser);
+router.put("/users/:id", updateUser);
+router.delete("/users/:id", deleteUser);
+router.post("/users/:id/posts", createPost);
+router.get("/users/:id/posts", getAllPosts);
+router.get("/users/:id/posts/:id", getPost);
+router.put("/users/:id/posts/:id", updatePost);
+router.delete("/users/:id/posts/:id", deletePost);
 
 export default router;
