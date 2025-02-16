@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { pool } from "../db";
-import { matchUserUUID } from "../utils";
+import { matchUserUUID } from "../utils/matchUserUUID";
 import { postSchema, Post } from "../models/posts";
 
 export const createPost = async (req: Request, res: Response) => {
