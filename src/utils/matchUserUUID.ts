@@ -8,13 +8,11 @@ export function matchUserUUID(path: string) {
       console.log("Extracted UUID:", match[1]);
       return match[1];
     }
-
   } catch (error) {
-    console.log("No UUID found.")
+    console.log("No UUID found.");
     throw error;
   }
-
-};
+}
 
 // test:
 // const newPath = '/users/29b2d67a-c843-4743-863f-c756f1202aee/posts';

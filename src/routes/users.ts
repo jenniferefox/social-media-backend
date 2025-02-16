@@ -1,6 +1,19 @@
 import express from "express";
-import { createUser, getAllUsers, getUser, updateUser, deleteUser, checkUserLogIn } from "../controllers/userControllers";
-import { createPost, deletePost, getAllPosts, getPost, updatePost  } from "../controllers/postControllers";
+import {
+  createUser,
+  getAllUsers,
+  getUser,
+  updateUser,
+  deleteUser,
+  checkUserLogIn,
+} from "../controllers/userControllers";
+import {
+  createPost,
+  deletePost,
+  getAllPosts,
+  getPost,
+  updatePost,
+} from "../controllers/postControllers";
 import { logoutUser } from "../controllers/userControllers";
 
 const router = express.Router();

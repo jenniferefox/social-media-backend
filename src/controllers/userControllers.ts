@@ -6,7 +6,10 @@ import { compareHashPassword } from "../utils/compareHashPassword";
 // import { checkIfUserLoggedIn } from "../utils/checkIfUserLoggedIn";
 import { deleteCookieOnLogout } from "../utils/deleteCookieOnLogout";
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const result = userSchema.safeParse(req.body);
 
@@ -21,14 +24,20 @@ export const createUser = async (req: Request, res: Response) => {
 
     await pool.query(
       "INSERT INTO users (user_id, email, password, name, favourite_colour, favourite_animal, favourite_snack) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-      [result.data.user_id, result.data.email, hashedPassword, result.data.name, result.data.favourite_colour, result.data.favourite_animal, result.data.favourite_snack ]
+      [
+        result.data.user_id,
+        result.data.email,
+        hashedPassword,
+        result.data.name,
+        result.data.favourite_colour,
+        result.data.favourite_animal,
+        result.data.favourite_snack,
+      ]
     );
 
     res.status(201).json({
       message: "New user added!",
-      data: result.data.user_id,
     });
-
   } catch (err: any) {
     console.error(err.message);
     res.status(500).json({ error: err.message });
@@ -92,7 +101,7 @@ export const getUser = async (req: Request, res: Response) => {
       id,
     ]);
 
-    res.json(user.rows[0].email);
+    res.json(user.rows[0]);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: err.message });
