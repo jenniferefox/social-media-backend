@@ -1,12 +1,14 @@
 import express from "express";
-import { createUser, getAllUsers, getUser, updateUser, deleteUser } from "../controllers/userControllers";
+import { createUser, getAllUsers, getUser, updateUser, deleteUser, checkUserLogIn } from "../controllers/userControllers";
 import { createPost, deletePost, getAllPosts, getPost, updatePost  } from "../controllers/postControllers";
+import { logoutUser } from "../controllers/userControllers";
 
 const router = express.Router();
 
-router.post("/login", createUser);
+router.post("/signup", createUser);
+router.post("/login", checkUserLogIn);
+router.delete("/logout", logoutUser);
 router.get("/users", getAllUsers);
-// router.get("/users/:email", checkIfUserValid);
 router.get("/users/:id", getUser);
 router.put("/users/:id", updateUser);
 router.delete("/users/:id", deleteUser);
