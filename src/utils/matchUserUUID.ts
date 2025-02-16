@@ -1,5 +1,3 @@
-import bcrypt from "bcrypt";
-
 export function matchUserUUID(path: string) {
   try {
     const regex = /([a-f0-9\-]{36})/;

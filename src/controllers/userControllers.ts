@@ -3,7 +3,6 @@ import { pool } from "../db";
 import { userLoginSchema, userSchema } from "../models/users";
 import { hashPassword } from "../utils/hashPassword";
 import { compareHashPassword } from "../utils/compareHashPassword";
-// import { checkIfUserLoggedIn } from "../utils/checkIfUserLoggedIn";
 import { deleteCookieOnLogout } from "../utils/deleteCookieOnLogout";
 
 export const createUser = async (
