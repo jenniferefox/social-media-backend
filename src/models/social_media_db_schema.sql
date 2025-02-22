@@ -14,6 +14,13 @@ CREATE TABLE users (
   favourite_snack VARCHAR(100) NOT NULL
 );
 
+CREATE TABLE generatedprofilepic (
+  picture_url VARCHAR(2000) PRIMARY KEY NOT NULL,
+  email VARCHAR(100) NOT NULl,
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+  FOREIGN KEY (email) REFERENCES users(email)
+);
+
 CREATE TABLE posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
   title VARCHAR(25),

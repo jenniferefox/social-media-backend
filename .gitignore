@@ -49,3 +49,5 @@ docker-compose.yml
 # Misc
 *.tgz
 .project
+
+holdCode.tsx
