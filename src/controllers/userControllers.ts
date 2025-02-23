@@ -58,12 +58,6 @@ export const createUser = async (
           favouriteSnack
         );
         console.log("Uploading image to S3...");
-        const profilePicUrl = await uploadImageToS3(imageUrl, email);
-
-    await pool.query(
-      "INSERT INTO generatedprofilepic (email, picture_url) VALUES ($1, $2)",
-      [email, profilePicUrl]
-    );
 
     return res.status(201).json({
       message: "New user added!",
