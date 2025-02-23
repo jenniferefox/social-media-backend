@@ -4,10 +4,10 @@ import { userLoginSchema, userSchema } from "../models/users";
 import { hashPassword } from "../utils/passwordLogin";
 import { compareHashPassword } from "../utils/passwordLogin";
 import { deleteCookieOnLogout } from "../utils/passwordLogin";
-import { createUserProfileImage } from "../utils/image";
+import { createUserProfileImage, uploadImageToS3 } from "../utils/image";
 import { createUserService } from "../services/userService";
 
-// Question for Alex: Is Promise<any> correct here
+// Question for Alex: Is Promise<any> correct here?
 // I did this to fix a bug, previously I had Promise<Response>
 
 export const createUser = async (
@@ -52,10 +52,18 @@ export const createUser = async (
       favouriteSnack
     );
 
-    // await pool.query(
-    //   "INSERT INTO generatedprofilepic (email, picture_url) VALUES ($1, $2)",
-    //   [email, profileURL]
-    // );
+    const imageUrl = await createUserProfileImage(
+          favouriteColour,
+          favouriteAnimal,
+          favouriteSnack
+        );
+        console.log("Uploading image to S3...");
+        const profilePicUrl = await uploadImageToS3(imageUrl, email);
+
+    await pool.query(
+      "INSERT INTO generatedprofilepic (email, picture_url) VALUES ($1, $2)",
+      [email, profilePicUrl]
+    );
 
     return res.status(201).json({
       message: "New user added!",
@@ -107,5 +115,24 @@ export const logoutUser = async (req: Request, res: Response): Promise<any> => {
     console.error(err.message);
     res.status(500).json({ error: err.message });
     return;
+  }
+};
+
+export const getUser = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).send("Bad request");
+    }
+
+    const user = await pool.query("SELECT * FROM users WHERE user_id = $1", [
+      id,
+    ]);
+
+    res.json(user.rows[0].name);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: err.message });
   }
 };
