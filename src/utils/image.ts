@@ -22,7 +22,9 @@ export async function createUserProfileImage(
   });
 
   const imageUrl = response.data[0].url;
-  if (!imageUrl) throw new Error("Failed to retrieve image URL from OpenAI.");
+  if (!imageUrl) {
+    throw new Error("Failed to retrieve image URL from OpenAI.")
+  };
 
   return imageUrl;
 }
@@ -33,7 +35,6 @@ export async function createUserProfileImage(
 //   return result;
 // };
 
-// Function to save image in s3 bucket
 export async function uploadImageToS3(imageUrl: string, email: string): Promise<string> {
   try {
     const sanitizedEmail =
@@ -50,6 +51,7 @@ export async function uploadImageToS3(imageUrl: string, email: string): Promise<
     };
 
     const imageBuffer = Buffer.from(response.data);
+    console.log(imageBuffer)
 
     const s3UploadParams = {
       Bucket: s3BucketName,
@@ -78,7 +80,6 @@ export function getCurrentProfilePicUrl(email: string) {
       email.replace(/@/g, "_at_").replace(/\./g, "_dot_") + ".jpg";
     const s3BucketName = process.env.S3_BUCKET_NAME;
     const s3PicUrl = `https://${s3BucketName}.s3.amazonaws.com/${sanitizedEmail}`;
-    return s3PicUrl;
 
   } catch(error) {
     console.error(`Error: ${error.message}`);
@@ -86,19 +87,19 @@ export function getCurrentProfilePicUrl(email: string) {
 
 }
 
-//  test uploadImage
-async function testUpload() {
-  try {
-    const imageUrl = await createUserProfileImage(
-      "pink",
-      "dog",
-      "cinnamon bun"
-    );
-    console.log("Uploading image to S3...");
-    await uploadImageToS3(imageUrl, "jen@email2.com");
-  } catch (error) {
-    console.error("Test failed:", error);
-  }
-}
+// //  test uploadImage
+// async function testUpload() {
+//   try {
+//     const imageUrl = await createUserProfileImage(
+//       "pink",
+//       "dog",
+//       "cinnamon bun"
+//     );
+//     console.log("Uploading image to S3...");
+//     await uploadImageToS3(imageUrl, "jen@email2.com");
+//   } catch (error) {
+//     console.error("Test failed:", error);
+//   }
+// }
 
-testUpload();
+// testUpload();

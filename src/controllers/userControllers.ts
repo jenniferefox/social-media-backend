@@ -5,15 +5,13 @@ import { hashPassword } from "../utils/passwordLogin";
 import { compareHashPassword } from "../utils/passwordLogin";
 import { deleteCookieOnLogout } from "../utils/passwordLogin";
 import { createUserProfileImage, uploadImageToS3 } from "../utils/image";
-import { createUserService } from "../services/userService";
+import {
+  createUserService,
+  createUserProfileService,
+} from "../services/userService";
+import { addImageToDB } from "../services/imageService";
 
-// Question for Alex: Is Promise<any> correct here?
-// I did this to fix a bug, previously I had Promise<Response>
-
-export const createUser = async (
-  req: Request,
-  res: Response
-): Promise<any> => {
+export const createUser = async (req: Request, res: Response): Promise<any> => {
   try {
     const result = userSchema.safeParse(req.body);
 
@@ -23,14 +21,23 @@ export const createUser = async (
       });
       return;
     }
+
     const userId = result.data.userId;
     const email = result.data.email;
-    const hashedPassword = await hashPassword(result.data.password);
     const favouriteColour = result.data.favouriteColour;
     const favouriteAnimal = result.data.favouriteAnimal;
     const favouriteSnack = result.data.favouriteSnack;
     const name = result.data.name;
+    const hashedPassword = await hashPassword(result.data.password);
 
+    console.log(
+      userId,
+      email,
+      favouriteColour,
+      favouriteAnimal,
+      favouriteSnack,
+      name
+    );
     const createUserResult = await createUserService(
       userId,
       email,
@@ -43,24 +50,28 @@ export const createUser = async (
     );
 
     if (createUserResult.error) {
-      return res.status(createUserResult.status).json({ error: createUserResult.message })
+      return res
+        .status(createUserResult.status)
+        .json({ error: createUserResult.message });
     }
 
-    const profileURL: string = await createUserProfileImage(
+    const imageUrl = await createUserProfileImage(
       favouriteColour,
       favouriteAnimal,
       favouriteSnack
     );
 
-    const imageUrl = await createUserProfileImage(
-          favouriteColour,
-          favouriteAnimal,
-          favouriteSnack
-        );
-        console.log("Uploading image to S3...");
+    const uploadedImage: string | Promise<void> = await uploadImageToS3(
+      imageUrl,
+      email
+    );
+
+    await addImageToDB(uploadedImage, userId);
 
     return res.status(201).json({
-      message: "New user added!",
+      message: "New user and picture added!",
+      userId: userId,
+      pictureUrl: uploadedImage
     });
   } catch (err: any) {
     console.error(err.message);
@@ -68,7 +79,10 @@ export const createUser = async (
   }
 };
 
-export const checkUserLogIn = async (req: Request, res: Response): Promise<any> => {
+export const checkUserLogIn = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const result = userLoginSchema.safeParse(req.body);
     console.log(result);
@@ -80,24 +94,27 @@ export const checkUserLogIn = async (req: Request, res: Response): Promise<any> 
       return;
     }
 
-    // FIXME: Check that email is not null, you are also not checking if db password is not null
-    // this is better for readability
-    // const queryResponse = await pool.query("SELECT etc.", [result.data.email])
-    // const password = queryResponse?rows[0].password
-
-    const db_password: string = (
-      await pool.query("SELECT password FROM users WHERE email = $1", [
+    const loginDetails = (
+      await pool.query("SELECT password, user_id FROM users WHERE email = $1", [
         result.data.email,
       ])
-    ).rows[0].password;
+    ).rows[0];
+    const dbPassword = loginDetails.password;
+    const userId = loginDetails.userId;
 
-    console.log("Comparing", result.data.password, db_password);
-    (await compareHashPassword(result.data.password, db_password))
+    console.log("Comparing", result.data.password, dbPassword);
+    (await compareHashPassword(result.data.password, dbPassword))
       ? console.log("Success!")
       : console.log("Fail!");
+
+    return res.status(200).json({
+      message: "Login Successful",
+      userId: userId,
+    });
   } catch (err) {
     console.error(err.message);
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
+    return;
   }
 };
 
@@ -120,13 +137,17 @@ export const getUser = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).send("Bad request");
     }
 
-    const user = await pool.query("SELECT * FROM users WHERE user_id = $1", [
-      id,
-    ]);
+    const userDetails = await createUserProfileService(id);
 
-    res.json(user.rows[0].name);
+    return res.status(201).json(userDetails);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: err.message });
   }
 };
+
+// NEXT STEPS:
+// get route to user id page working
+// show corresponding profile pic
+// get logout working
+// ensure cookies are working

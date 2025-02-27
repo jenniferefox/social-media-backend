@@ -21,3 +21,10 @@ export const userLoginSchema = z.object({
     .email("This is not a valid email"),
   password: z.string().max(200),
 });
+
+export const generatedProfilePicSchema = z.object({
+  pictureId: z.string().uuid().default(uuidv4()),
+  pictureUrl: z.string().url(),
+  createdAt: z.date().default(() => new Date()),
+  userId: z.string().uuid(),
+});
